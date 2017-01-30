@@ -1,20 +1,18 @@
 
 
 ################ TO DO #####################################
-#
-# Describe format of data files particularly the mapping file
-# (the file needs to be sorted in order of priority
+# Need to rethink when I should use indices on dataframes
+# http://pythonhow.com/accessing-dataframe-columns-rows-and-cells
+# https://tomaugspurger.github.io/modern-1.html
+# http://stackoverflow.com/questions/27238066/what-is-the-point-of-indexing-in-pandas
 #
 #
 # Am I going to have to build in an overide for cases 
 # where mapping does not work?  Maybe just a manual overide
 # column in underlying data
 #
-# Need to rethink when I should use indices on dataframes
-#
-# Add below fields
-#   (1) Total expense for month
-#   (2) Prepayment
+# Describe format of data files particularly the mapping file
+# (the file needs to be sorted in order of priority
 
 
 
