@@ -1,13 +1,6 @@
 
 
 ################ TO DO #####################################
-# Need to rethink when I should use indices on dataframes
-# http://pythonhow.com/accessing-dataframe-columns-rows-and-cells
-# https://tomaugspurger.github.io/modern-1.html
-# http://stackoverflow.com/questions/27238066/what-is-the-point-of-indexing-in-pandas
-#
-#
-# Am I going to have to build in an overide for cases 
 # where mapping does not work?  Maybe just a manual overide
 # column in underlying data
 #
@@ -26,7 +19,7 @@ data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
 
 
 def ReadData():
-
+    """Read data into globally scoped pandas dataframes"""
 
     # Set data frames with global scope to avoid passing between subs
     global df_transactions
@@ -36,8 +29,9 @@ def ReadData():
     # Read transaction data into pandas dataframes 
     df_transactions = pd.read_csv(data_dir+ 'transactions.csv', dayfirst=True, \
             parse_dates=[1])
-    df_mapping = pd.read_csv(data_dir+ 'mapping.csv')
-    df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv')
+    df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
+    df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
+            index_col=0)
 
 
 
@@ -70,46 +64,22 @@ def TempSumIf():
 
 
 
-# def TempStringContains():
-#
-#    StringContains = sum(df_transactions\
-#            [df_transactions.Description.str.contains('EZI')]\
-#            .Amount)
-#
-#    print (StringContains)
+
+def MapDescriptionToExpenseAccount(description):
+    """Map bank text transaction desciption to expense accounts"""
+
+    for description_contains in df_mapping.index:
+        if description_contains.upper() in description.upper():
+            return df_mapping.loc[description_contains, 'ExpenseAccount']
+
+    # if not matches found
+    return ('Unmatched')
 
 
-#def MapDescriptionToDisclosureOne(description):
-#
-#    #works but is pretty slow
-#    for index, series  in df_mapping.iterrows():
-#        if description in series['DescriptionContains']:
-#            return (series['Disclosure'])
-#
-#    # if no matches found:
-#    return ('Unmatched')
-
-
-
-def MapDescriptionToExpenseAccount():
-
-    
-    for index, series in df_mapping.iterrows():
-
-        df_transactions.loc[df_transactions['Description'].str.contains(\
-               series['DescriptionContains']), 'ExpenseAccount'] = \
-               series['ExpenseAccount']  
-
-    # Replace any Nan values with Unmapped ('Nan' is not picked up in 
-    # pivot tables.
-    df_transactions['ExpenseAccount'] = df_transactions['ExpenseAccount']\
-            .fillna('Unmapped')
-
-   
-   
    
 
 def GetTransactionMonthEnd():
+    """Adds a month end date to the transactions panda dataframe"""
 
     df_transactions['MonthEnd'] = df_transactions['Date'] + \
             pd.offsets.MonthEnd(0) 
@@ -122,13 +92,11 @@ if __name__=='__main__':
 
     ReadData()
     
-#    df_transactions['tempdisclosureOne'] = df_transactions['Description'].apply\
-#            (MapDescriptionToDisclosureOne)
-
-    MapDescriptionToExpenseAccount()
     GetTransactionMonthEnd()
 
-    #TempStringContains()
+    df_transactions['ExpenseAccount'] = df_transactions['Description'].apply\
+            (MapDescriptionToExpenseAccount)
+
+    
     #TempSumIf()
-    #TempTesting()
 
