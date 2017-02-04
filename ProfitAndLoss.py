@@ -18,49 +18,19 @@ data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
 
 
 
-def ReadData():
-    """Read data into globally scoped pandas dataframes"""
-
-    # Set data frames with global scope to avoid passing between subs
-    global df_transactions
-    global df_mapping
-    global df_expensedetails
-
-    # Read transaction data into pandas dataframes 
-    df_transactions = pd.read_csv(data_dir+ 'transactions.csv', dayfirst=True, \
-            parse_dates=[1])
-    df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
-    df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
-            index_col=0)
-
-
-
-
-def TempGrouping():
-
-    # TEMP 
-    # df_temp = df_transactions.groupby(["Description"]).sum())
-    #unq = df_transactions['Description'].unique()
-    #print(unq)
-    grp = df_transactions['Amount'].groupby(df_transactions['Description'])\
-            .sum()
-    print (grp)
 
 
 def TempSumIf():
 
     str_to_match="EZIDEBIT HEALTHFIT MB    FORTITUDE VA"
   
-    mysumif = sum(df_transactions[\
-                    (df_transactions.Description == str_to_match ) & \
-                    (df_transactions.Date == '2016/06/30')]\
+    mysumif = sum(df_trx[\
+                    (df_trx.Description == str_to_match ) & \
+                    (df_trx.Date == '2016/06/30')]\
                 .Amount)
 
     print (mysumif) 
 
-
-    # Alternative method commented out    
-    #     mysumif = df_transactions.query("Description == '""EZIDEBIT HEALTHFIT MB    FORTITUDE VA""'")['Amount'].sum()
 
 
 
@@ -76,27 +46,33 @@ def MapDescriptionToExpenseAccount(description):
     return ('Unmatched')
 
 
-   
-
-def GetTransactionMonthEnd():
-    """Adds a month end date to the transactions panda dataframe"""
-
-    df_transactions['MonthEnd'] = df_transactions['Date'] + \
-            pd.offsets.MonthEnd(0) 
-
 
 
 
 if __name__=='__main__':
 
 
-    ReadData()
-    
-    GetTransactionMonthEnd()
+    # Read transaction data and mapping tables into pandas dataframes 
+    df_trx = pd.read_csv(data_dir+ 'transactions.csv', dayfirst=True, \
+            parse_dates=[1])
+    df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
+    df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
+            index_col=0)
 
-    df_transactions['ExpenseAccount'] = df_transactions['Description'].apply\
+
+    # Add a month end date into the transaction dataframe
+    df_trx['MonthEnd'] = df_trx['Date'] + \
+            pd.offsets.MonthEnd(0) 
+
+
+    # Add in the mapped expense account
+    df_trx['ExpenseAccount'] = df_trx['Description'].apply\
             (MapDescriptionToExpenseAccount)
 
-    
-    #TempSumIf()
+
+    # Create a summary by month end and expense account    
+    df_trx_summary = df_trx.pivot_table\
+            (index=['MonthEnd','ExpenseAccount'], values='Amount')
+
+
 
