@@ -69,10 +69,16 @@ if __name__=='__main__':
     df_trx['ExpenseAccount'] = df_trx['Description'].apply\
             (MapDescriptionToExpenseAccount)
 
+    # Merge transaction with expense account details (e.g. amortisation period)
+    df_trx = pd.merge(df_trx, df_expensedetails, how='left', right_index=True,\
+            left_on='ExpenseAccount')
+
 
     # Create a summary by month end and expense account    
     df_trx_summary = df_trx.pivot_table\
-            (index=['MonthEnd','ExpenseAccount'], values='Amount')
+            (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup', \
+            'IsPrepayment'], \
+            values='Amount')
 
 
 
