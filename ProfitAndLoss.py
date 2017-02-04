@@ -1,6 +1,11 @@
 
 
 ################ TO DO #####################################
+#
+# Refer last piece of main.  Nan dataframe values is causing
+# empty pivot table
+#
+#
 # where mapping does not work?  Maybe just a manual overide
 # column in underlying data
 #
@@ -74,7 +79,8 @@ if __name__=='__main__':
             left_on='ExpenseAccount')
 
 
-    # Create a summary by month end and expense account    
+    # Create a summary version
+# ??????? HAVING TROUBLE GROUPING WITH Nan values from df - causes empty pivot    
     df_trx_summary = df_trx.pivot_table\
             (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup', \
             'IsPrepayment'], \
