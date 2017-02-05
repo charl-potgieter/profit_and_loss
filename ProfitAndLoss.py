@@ -2,8 +2,8 @@
 
 ################ TO DO #####################################
 #
-# df_trx_summary pivot.  What should I include as column
-# and what is index
+# 
+# 
 # 
 #
 #
@@ -54,6 +54,15 @@ def MapDescriptionToExpenseAccount(description):
 
 
 
+def ExpenseForMonth(row):
+    """ Return expense for the month.   Row is a pandas dataframe row
+    passed to this funtion as a series"""
+
+    if row['IsPrepayment'] == False:
+        return(row['Amount'])
+    else:
+        return ('TBA')
+    
 
 
 
@@ -95,10 +104,10 @@ if __name__=='__main__':
     # in pivot_table command above
     df_trx_summary = df_trx_summary.reset_index()
 
+    
+    # Write expense impact to dataframe
+    df_trx_summary['PandL'] = df_trx_summary.apply(ExpenseForMonth, axis=1)
+
 
     # Export summary
     df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
-
-
-
-
