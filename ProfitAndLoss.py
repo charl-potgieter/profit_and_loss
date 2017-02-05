@@ -3,7 +3,14 @@
 ################ TO DO #####################################
 #
 # 
-# 
+# Add below columns to df_trx_summary
+#    - previous month paid something like: 
+#       max(df_trx_summary[df_trx_summary.MonthEnd < '2015-05-31']['MonthEnd'])
+#
+#    - previous amount paid
+#    - opening accrual or prepayment
+#    - P&L
+#    - closing accrual or prepayment
 # 
 #
 #
