@@ -56,6 +56,7 @@ def MapDescriptionToExpenseAccount(description):
 
 
 
+
 if __name__=='__main__':
 
 
@@ -85,10 +86,14 @@ if __name__=='__main__':
     # Create a summary version
     df_trx_summary = df_trx.pivot_table\
             (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup',\
-            'IsPrepayment', 'AmortisationMonths',\
-            'LastAmortisationMonthEnd'],
-            columns='StartingCost',\
-            values='Amount', aggfunc=np.sum)
+                    'IsPrepayment', 'AmortisationMonths',\
+                    'LastAmortisationMonthEnd', 'StartingCost'],\
+            values='Amount',\
+            aggfunc=np.sum)
+
+    # Move the index to columns.  Can't seem to get this to work directly
+    # in pivot_table command above
+    df_trx_summary = df_trx_summary.reset_index()
 
 
     # Export summary
