@@ -2,8 +2,9 @@
 
 ################ TO DO #####################################
 #
-# Refer last piece of main.  Nan dataframe values is causing
-# empty pivot table
+# df_trx_summary pivot.  What should I include as column
+# and what is index
+# 
 #
 #
 # where mapping does not work?  Maybe just a manual overide
@@ -16,6 +17,7 @@
 
 
 import pandas as pd
+import numpy as np
 
 
 data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
@@ -75,16 +77,23 @@ if __name__=='__main__':
             (MapDescriptionToExpenseAccount)
 
     # Merge transaction with expense account details (e.g. amortisation period)
+    # Note use of fillna to prevent this data being dropped in pivot_table
     df_trx = pd.merge(df_trx, df_expensedetails, how='left', right_index=True,\
-            left_on='ExpenseAccount')
+            left_on='ExpenseAccount').fillna("[NULL]")
 
 
     # Create a summary version
-# ??????? HAVING TROUBLE GROUPING WITH Nan values from df - causes empty pivot    
     df_trx_summary = df_trx.pivot_table\
-            (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup', \
-            'IsPrepayment'], \
-            values='Amount')
+            (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup',\
+            'IsPrepayment', 'AmortisationMonths',\
+            'LastAmortisationMonthEnd'],
+            columns='StartingCost',\
+            values='Amount', aggfunc=np.sum)
+
+
+    # Export summary
+    df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
+
 
 
 
