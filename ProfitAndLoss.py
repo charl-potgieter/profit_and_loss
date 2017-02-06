@@ -2,6 +2,15 @@
 
 ################ TO DO #####################################
 #
+#Create a new dataframe with cartesian product.  Someting like below
+# l_1 = []
+#    ...: l_2 = []
+#        ...: for x in df_test.col1:
+#                ...:     for y in df_test.col2:
+#                        ...:         l_1.append(x)
+#                            ...:         l_2.append(y)
+#
+#
 # 
 # Add below columns to df_trx_summary
 #    - previous month paid something like: 
