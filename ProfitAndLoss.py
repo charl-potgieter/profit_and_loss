@@ -2,14 +2,9 @@
 
 ################ TO DO #####################################
 #
-#Create a new dataframe with cartesian product.  Someting like below
-# l_1 = []
-#    ...: l_2 = []
-#        ...: for x in df_test.col1:
-#                ...:     for y in df_test.col2:
-#                        ...:         l_1.append(x)
-#                            ...:         l_2.append(y)
-#
+# Refer to Cartesian and test.  Think about building dataframe
+# up from this and removing the current trx_summary created from a 
+# pivot table
 #
 # 
 # Add below columns to df_trx_summary
@@ -81,6 +76,26 @@ def ExpenseForMonth(row):
     
 
 
+def CartesianLists(L1, L2):
+    """returns cartesian product of 2 lists L1 and L2 as a list of tuples"""
+
+    outerlist=[]
+    innerlist=[]
+    for x in L1:
+        for y in L2:
+            outerlist.append(x)
+            innerlist.append(y)
+    return(list(zip(*[outerlist, innerlist])))
+
+
+
+def TestMultiIndexCreateWithCartesian():
+
+    index = pd.MultiIndex.from_tuples(CartesianLists(['a', 'b', 'c'], [1,2,3]), names=['first', 'second'])
+    print (index)
+
+
+
 
 if __name__=='__main__':
 
@@ -124,6 +139,9 @@ if __name__=='__main__':
     # Write expense impact to dataframe
     df_trx_summary['PandL'] = df_trx_summary.apply(ExpenseForMonth, axis=1)
 
+    # DELETE THIS LATER
+    TestMultiIndexCreateWithCartesian()
+    
 
     # Export summary
     df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
