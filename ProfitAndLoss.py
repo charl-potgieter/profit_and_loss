@@ -2,9 +2,9 @@
 
 ################ TO DO #####################################
 #
-# Refer to Cartesian and test.  Think about building dataframe
-# up from this and removing the current trx_summary created from a 
-# pivot table
+# Merge df_trx_summary with expense details
+#
+# Add amount (anything else from trx_transactions?)
 #
 # 
 # Add below columns to df_trx_summary
@@ -23,7 +23,6 @@
 #
 # Describe format of data files particularly the mapping file
 # (the file needs to be sorted in order of priority
-
 
 
 
@@ -52,7 +51,6 @@ def TempSumIf():
 
 
 
-
 def MapDescriptionToExpenseAccount(description):
     """Map bank text transaction desciption to expense accounts"""
 
@@ -77,7 +75,7 @@ def ExpenseForMonth(row):
 
 
 def CartesianLists(L1, L2):
-    """returns cartesian product of 2 lists L1 and L2 as a list of tuples"""
+    """returns cartesian product of 2 pandas series L1 and L2 as a list of 2 lists"""
 
     outerlist=[]
     innerlist=[]
@@ -85,15 +83,19 @@ def CartesianLists(L1, L2):
         for y in L2:
             outerlist.append(x)
             innerlist.append(y)
-    return(list(zip(*[outerlist, innerlist])))
+    return ((outerlist, innerlist))
+    #return(list(zip(*[outerlist, innerlist])))
 
 
 
 def TestMultiIndexCreateWithCartesian():
 
-    index = pd.MultiIndex.from_tuples(CartesianLists(['a', 'b', 'c'], [1,2,3]), names=['first', 'second'])
-    print (index)
-
+  #  index = pd.MultiIndex.from_tuples(CartesianLists(['a', 'b', 'c'], [1,2,3]), names=['first', 'second'])
+   
+    (L1, L2) = CartesianLists(['a','b','c'], ['d','e','f'])
+    # L2= CartesianLists(['a','b','c'], ['d','e','f'])[1]
+    df_temp = pd.DataFrame({'head_a' : L1, 'head_b': L2 })
+    print (df_temp)
 
 
 
@@ -105,43 +107,57 @@ if __name__=='__main__':
             parse_dates=[1])
     df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
     df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
-            index_col=0)
-
+                index_col=0)
 
     # Add a month end date into the transaction dataframe
     df_trx['MonthEnd'] = df_trx['Date'] + \
             pd.offsets.MonthEnd(0) 
 
-
     # Add in the mapped expense account
     df_trx['ExpenseAccount'] = df_trx['Description'].apply\
             (MapDescriptionToExpenseAccount)
 
+    # Create summary dataframe with Cartesian product of monthend and Expense 
+    # Accounts
+    MonthEndList = pd.Series(df_trx['MonthEnd']).unique()
+    ExpenseAccountList = pd.Series(df_trx['ExpenseAccount']).unique()
+    MonthEndCartesian, ExpenseAccountCartesian = CartesianLists (\
+            MonthEndList, ExpenseAccountList)
+    df_trx_summary = pd.DataFrame({'MonthEnd' : MonthEndCartesian, \
+            'ExpenseAccount' : ExpenseAccountCartesian})
+
+
+
+################################################################################
+#                OLDER EXPERIMENTATION TO BE DELETED LATER
+################################################################################
+
+
+
     # Merge transaction with expense account details (e.g. amortisation period)
     # Note use of fillna to prevent this data being dropped in pivot_table
-    df_trx = pd.merge(df_trx, df_expensedetails, how='left', right_index=True,\
-            left_on='ExpenseAccount').fillna("[NULL]")
+#    df_trx = pd.merge(df_trx, df_expensedetails, how='left', \
+#            left_on='ExpenseAccount').fillna("[NULL]")
 
 
     # Create a summary version
-    df_trx_summary = df_trx.pivot_table\
-            (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup',\
-                    'IsPrepayment', 'AmortisationMonths',\
-                    'LastAmortisationMonthEnd', 'StartingCost'],\
-            values='Amount',\
-            aggfunc=np.sum)
+    #df_trx_summary = df_trx.pivot_table\
+    #        (index=['MonthEnd', 'ExpenseAccount', 'ExpenseGroup',\
+    #                'IsPrepayment', 'AmortisationMonths',\
+    #                'LastAmortisationMonthEnd', 'StartingCost'],\
+    #        values='Amount',\
+    #        aggfunc=np.sum)
 
     # Move the index to columns.  Can't seem to get this to work directly
     # in pivot_table command above
-    df_trx_summary = df_trx_summary.reset_index()
+    # df_trx_summary = df_trx_summary.reset_index()
 
     
     # Write expense impact to dataframe
-    df_trx_summary['PandL'] = df_trx_summary.apply(ExpenseForMonth, axis=1)
+# UNCOMMENT BELOW LINE ONCE SUMMARY IS RECREATED
+    #df_trx_summary['PandL'] = df_trx_summary_summary(ExpenseForMonth, axis=1)
 
-    # DELETE THIS LATER
-    TestMultiIndexCreateWithCartesian()
     
 
     # Export summary
-    df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
+#    df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
