@@ -2,8 +2,6 @@
 
 ################ TO DO #####################################
 #
-# Merge df_trx_summary with expense details
-#
 # Add amount (anything else from trx_transactions?)
 #
 # 
@@ -36,17 +34,6 @@ data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
 
 
 
-
-def TempSumIf():
-
-    str_to_match="EZIDEBIT HEALTHFIT MB    FORTITUDE VA"
-  
-    mysumif = sum(df_trx[\
-                    (df_trx.Description == str_to_match ) & \
-                    (df_trx.Date == '2016/06/30')]\
-                .Amount)
-
-    print (mysumif) 
 
 
 
@@ -88,16 +75,6 @@ def CartesianLists(L1, L2):
 
 
 
-def TestMultiIndexCreateWithCartesian():
-
-  #  index = pd.MultiIndex.from_tuples(CartesianLists(['a', 'b', 'c'], [1,2,3]), names=['first', 'second'])
-   
-    (L1, L2) = CartesianLists(['a','b','c'], ['d','e','f'])
-    # L2= CartesianLists(['a','b','c'], ['d','e','f'])[1]
-    df_temp = pd.DataFrame({'head_a' : L1, 'head_b': L2 })
-    print (df_temp)
-
-
 
 if __name__=='__main__':
 
@@ -107,7 +84,7 @@ if __name__=='__main__':
             parse_dates=[1])
     df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
     df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
-                index_col=0)
+                index_col=0, parse_dates=[5])
 
     # Add a month end date into the transaction dataframe
     df_trx['MonthEnd'] = df_trx['Date'] + \
@@ -121,10 +98,20 @@ if __name__=='__main__':
     # Accounts
     MonthEndList = pd.Series(df_trx['MonthEnd']).unique()
     ExpenseAccountList = pd.Series(df_trx['ExpenseAccount']).unique()
-    MonthEndCartesian, ExpenseAccountCartesian = CartesianLists (\
+    (MonthEndCartesian, ExpenseAccountCartesian) = CartesianLists (\
             MonthEndList, ExpenseAccountList)
     df_trx_summary = pd.DataFrame({'MonthEnd' : MonthEndCartesian, \
             'ExpenseAccount' : ExpenseAccountCartesian})
+
+
+    # Merge transaction with expense account details (e.g. amortisation period)
+    df_trx_summary = pd.merge(df_trx_summary, df_expensedetails, how='left', \
+            left_on='ExpenseAccount', right_index=True)
+
+
+
+
+
 
 
 
@@ -134,10 +121,6 @@ if __name__=='__main__':
 
 
 
-    # Merge transaction with expense account details (e.g. amortisation period)
-    # Note use of fillna to prevent this data being dropped in pivot_table
-#    df_trx = pd.merge(df_trx, df_expensedetails, how='left', \
-#            left_on='ExpenseAccount').fillna("[NULL]")
 
 
     # Create a summary version
@@ -161,3 +144,26 @@ if __name__=='__main__':
 
     # Export summary
 #    df_trx_summary.to_csv(data_dir + 'transactions_summary.csv')
+
+#def TempSumIf():
+#
+#    str_to_match="EZIDEBIT HEALTHFIT MB    FORTITUDE VA"
+#  
+#    mysumif = sum(df_trx[\
+#                    (df_trx.Description == str_to_match ) & \
+#                    (df_trx.Date == '2016/06/30')]\
+#                .Amount)
+#
+#    print (mysumif) 
+#
+#def TestMultiIndexCreateWithCartesian():
+#
+#  #  index = pd.MultiIndex.from_tuples(CartesianLists(['a', 'b', 'c'], [1,2,3]), names=['first', 'second'])
+#   
+#    (L1, L2) = CartesianLists(['a','b','c'], ['d','e','f'])
+#    # L2= CartesianLists(['a','b','c'], ['d','e','f'])[1]
+#    df_temp = pd.DataFrame({'head_a' : L1, 'head_b': L2 })
+#    print (df_temp)
+#
+
+
