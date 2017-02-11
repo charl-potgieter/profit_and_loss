@@ -4,15 +4,7 @@
 #
 # Consider
 # ---------
-# try pandas.MultiIndex.from_product (creates from cartesian)
-# http://pandas.pydata.org/pandas-docs/stable/generated/pandas.MultiIndex.from_product.html
-# pivot df_trx by month and expense account
-# reindex with the complete cartestian product of the two
 #
-#
-# Add amount (anything else from trx_transactions?)
-#
-# 
 # Add below columns to df_trx_summary
 #    - previous month paid something like: 
 #       max(df_trx_summary[df_trx_summary.MonthEnd < '2015-05-31']['MonthEnd'])
@@ -38,12 +30,6 @@ import numpy as np
 
 data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
         '/Roll_Forward_Data/'
-
-
-
-
-
-
 
 
 def MapDescriptionToExpenseAccount(description):
@@ -102,18 +88,32 @@ if __name__=='__main__':
     # indices (need Expense account for every month even if no payment as it
     # may have an amortised value
     complete_index = pd.MultiIndex.from_product([df_trx.index.levels[0],\
-            df_trx.index.levels[1]])
+            df_trx.index.levels[1]], names=['MonthEnd', 'ExpenseAccount'])
     df_trx = df_trx.reindex(complete_index, fill_value=0)
 
     # convert back to a dataframe (as above results in a series as only
     # has one column
     df_trx=pd.DataFrame(df_trx)
 
+    # Use join rather than merge with expensedetails to join single index
+    # to multi-index dataframe
+    # http://pandas-docs.github.io/pandas-docs-travis/merging.html#merging-join-on-mi
+    df_trx = df_trx.join(df_expensedetails, how='left')
+
+
+
+
+
+
 
 
 ################################################################################
 #                OLDER EXPERIMENTATION TO BE DELETED LATER
 ################################################################################
+
+    # Merge transaction with expense account details (e.g. amortisation period)
+#    df_trx = pd.merge(df_trx, df_expensedetails, how='left', \
+#            left_on='ExpenseAccount',left_index=True, right_index=True)
 
 
 
@@ -128,8 +128,6 @@ if __name__=='__main__':
 #            innerlist.append(y)
 #    return ((outerlist, innerlist))
 #    #return(list(zip(*[outerlist, innerlist])))
-#
-
 
 
    # temp_index = pd.MultiIndex.from_product([list(df_trx['MonthEnd'].unique()),\
@@ -141,10 +139,6 @@ if __name__=='__main__':
 #    df_trx_summary = pd.DataFrame({'MonthEnd' : MonthEndCartesian, \
 #            'ExpenseAccount' : ExpenseAccountCartesian})
 
-
-    # Merge transaction with expense account details (e.g. amortisation period)
-#    df_trx_summary = pd.merge(df_trx_summary, df_expensedetails, how='left', \
-#            left_on='ExpenseAccount', right_index=True)
 
 
 
