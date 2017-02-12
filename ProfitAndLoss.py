@@ -5,6 +5,7 @@
 # Consider
 # ---------
 #
+#
 # Add below columns to df_trx_summary
 #    - previous month paid something like: 
 #       max(df_trx_summary[df_trx_summary.MonthEnd < '2015-05-31']['MonthEnd'])
@@ -32,15 +33,19 @@ data_dir='/home/charl/Documents_Charl/010_EncryptForCloudBackup/Roll_Forward'\
         '/Roll_Forward_Data/'
 
 
-def MapDescriptionToExpenseAccount(description):
+
+
+def MapDescriptionToExpenseAccount(row):
     """Map bank text transaction desciption to expense accounts"""
-
+    
     for description_contains in df_mapping.index:
-        if description_contains.upper() in description.upper():
-            return df_mapping.loc[description_contains, 'ExpenseAccount']
-
-    # if not matches found
+        if description_contains.upper() in row['Description']:
+            return(df_mapping.loc[description_contains]['ExpenseAccount'])
+   
+   # if not matches found
     return ('Unmatched')
+
+
 
 
 
@@ -76,9 +81,10 @@ if __name__=='__main__':
     df_trx['MonthEnd'] = df_trx['Date'] + \
             pd.offsets.MonthEnd(0) 
 
+   
     # Add in the mapped expense account
-    df_trx['ExpenseAccount'] = df_trx['Description'].apply\
-            (MapDescriptionToExpenseAccount)
+    df_trx['ExpenseAccount'] = df_trx.apply(\
+            func = MapDescriptionToExpenseAccount, axis =1)
 
     # Summarise by unique MonthEnd /  ExpenseAccount index
     df_trx = pd.pivot_table(df_trx, index=['MonthEnd', 'ExpenseAccount'],\
@@ -86,7 +92,7 @@ if __name__=='__main__':
 
     # Reindex to get a complete Cartesian product of MontheEnd / ExpenseAccount
     # indices (need Expense account for every month even if no payment as it
-    # may have an amortised value
+    # may have an amortised value)
     complete_index = pd.MultiIndex.from_product([df_trx.index.levels[0],\
             df_trx.index.levels[1]], names=['MonthEnd', 'ExpenseAccount'])
     df_trx = df_trx.reindex(complete_index, fill_value=0)
@@ -197,4 +203,19 @@ if __name__=='__main__':
 #    print (df_temp)
 #
 
+#def MapDescriptionToExpenseAccount(description):
+#    """Map bank text transaction desciption to expense accounts"""
+#
+#    for description_contains in df_mapping.index:
+#        if description_contains.upper() in description.upper():
+#            return df_mapping.loc[description_contains, 'ExpenseAccount']
+#
+#    # if not matches found
+#    return ('Unmatched')
+#
 
+
+# Add in the mapped expense account
+#    df_trx['ExpenseAccount'] = df_trx['Description'].apply\
+#            (MapDescriptionToExpenseAccount)
+ 
