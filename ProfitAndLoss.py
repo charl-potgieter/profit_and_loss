@@ -2,14 +2,8 @@
 
 ################ TO DO #####################################
 #
-# Consider
-# ---------
-#
 #
 # Add below columns to df_trx_summary
-#    - previous month paid something like: 
-#       max(df_trx_summary[df_trx_summary.MonthEnd < '2015-05-31']['MonthEnd'])
-#
 #    - previous amount paid
 #    - opening accrual or prepayment
 #    - P&L
@@ -48,7 +42,6 @@ def MapDescriptionToExpenseAccount(row):
 
 
 
-
 def ExpenseForMonth(row):
     """ Return expense for the month.   Row is a pandas dataframe row
     passed to this funtion as a series"""
@@ -61,6 +54,23 @@ def ExpenseForMonth(row):
 
 
 
+def PreviousMonthPaid(row):
+    """Return the previous month paid"""
+
+    series_EarlierPaymentMonths = df_trx[
+                        (df_trx['MonthEnd'] < row['MonthEnd']) & \
+                        (df_trx['ExpenseAccount'] == row['ExpenseAccount']) & \
+                        (df_trx['Amount'] != 0)
+                                        ]\
+                                        ['MonthEnd']
+
+    if series_EarlierPaymentMonths.empty == False:
+        return (max(series_EarlierPaymentMonths))
+    elif row['ExpenseAccount'] in df_expensedetails.index:
+        return (df_expensedetails.loc[row['ExpenseAccount']]\
+                ['OpeningPaymentDate'])
+    else:
+        return np.NaN
 
 
 if __name__=='__main__':
@@ -71,7 +81,7 @@ if __name__=='__main__':
             parse_dates=[1])
     df_mapping = pd.read_csv(data_dir+ 'mapping.csv', index_col=0)
     df_expensedetails = pd.read_csv(data_dir+ 'expense_details.csv', \
-                index_col=0, parse_dates=[5])
+                index_col=0, parse_dates=[4,6])
 
     # Create a copy for working so that original dataframe still exists for
     # reference and debugging
@@ -79,7 +89,7 @@ if __name__=='__main__':
 
     # Add a month end date into the transaction dataframe
     df_trx['MonthEnd'] = df_trx['Date'] + \
-            pd.offsets.MonthEnd(0) 
+        pd.offsets.MonthEnd(0) 
 
    
     # Add in the mapped expense account
@@ -106,9 +116,22 @@ if __name__=='__main__':
     # http://pandas-docs.github.io/pandas-docs-travis/merging.html#merging-join-on-mi
     df_trx = df_trx.join(df_expensedetails, how='left')
 
+    # Move index into columns to make dataframe easier to work with
+    df_trx = df_trx.reset_index()
+
+    # Add various other calculated fields to the dataframe & save output
+    df_trx['PreviousMonthPaid'] = df_trx.apply(\
+            func = PreviousMonthPaid, axis = 1)
+    
+    df_trx['PreviousAmountPaid'] = 'TBA' 
 
 
 
+
+  
+
+
+    df_trx.to_csv(data_dir + 'transaction_output.csv')
 
 
 
