@@ -4,7 +4,6 @@
 #
 #
 # Add below columns to df_trx_summary
-#    - previous amount paid
 #    - opening accrual or prepayment
 #    - P&L
 #    - closing accrual or prepayment
@@ -55,7 +54,7 @@ def ExpenseForMonth(row):
 
 
 def PreviousMonthPaid(row):
-    """Return the previous month paid"""
+    """Return the previous month paid for given ExpenseAccount"""
 
     series_EarlierPaymentMonths = df_trx[
                         (df_trx['MonthEnd'] < row['MonthEnd']) & \
@@ -68,9 +67,41 @@ def PreviousMonthPaid(row):
         return (max(series_EarlierPaymentMonths))
     elif row['ExpenseAccount'] in df_expensedetails.index:
         return (df_expensedetails.loc[row['ExpenseAccount']]\
-                ['OpeningPaymentDate'])
+                ['OpeningPaymentMonthEnd'])
     else:
         return np.NaN
+
+
+
+def PreviousAmountPaid(row):
+    """Returns previous amount paid for given ExpenseAccount"""
+
+
+    if pd.isnull(row['PreviousMonthPaid']):
+        return (0)
+    elif row['OpeningPaymentMonthEnd'] == row['PreviousMonthPaid']:
+        return (row['OpeningPaymentAmount'])
+    else:
+        return (sum(df_trx[\
+                    (df_trx['ExpenseAccount'] == row['ExpenseAccount']) & \
+                    (df_trx['MonthEnd'] == row['PreviousMonthPaid'])
+                      ]\
+                    ['Amount'])
+        )
+
+
+
+
+
+#    elif row['PreviousMonthPaid'] == df_expensedetails.loc\
+#            [row['ExpenseAccount']]['OpeningPaymentMonthEnd']:
+#            return (df_expensedetails.loc[row['ExpenseAccount']]\
+#                    ['OpeningPaymentAmount'])
+#
+#
+
+
+
 
 
 if __name__=='__main__':
@@ -123,7 +154,8 @@ if __name__=='__main__':
     df_trx['PreviousMonthPaid'] = df_trx.apply(\
             func = PreviousMonthPaid, axis = 1)
     
-    df_trx['PreviousAmountPaid'] = 'TBA' 
+    df_trx['PreviousAmountPaid'] = df_trx.apply(\
+            func = PreviousAmountPaid, axis =1)
 
 
 
