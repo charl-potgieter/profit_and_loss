@@ -43,18 +43,6 @@ def MapDescriptionToExpenseAccount(row):
 
 
 
-def ExpenseForMonth(row):
-    """ Return expense for the month.   Row is a pandas dataframe row
-    passed to this funtion as a series"""
-
-    if row['IsPrepayment'] == False:
-        return(row['Amount'])
-    else:
-        return ('TBA')
-    
-
-
-
 def PreviousMonthPaid(row):
     """Return the previous month paid for given ExpenseAccount"""
 
@@ -72,6 +60,7 @@ def PreviousMonthPaid(row):
                 ['OpeningPaymentMonthEnd'])
     else:
         return np.NaN
+
 
 
 
@@ -276,4 +265,15 @@ if __name__=='__main__':
 # Add in the mapped expense account
 #    df_trx['ExpenseAccount'] = df_trx['Description'].apply\
 #            (MapDescriptionToExpenseAccount)
- 
+
+
+
+#def ExpenseForMonth(row):
+#    """ Return expense for the month.   Row is a pandas dataframe row
+#    passed to this funtion as a series"""
+#
+#    if row['IsPrepayment'] == False:
+#        return(row['Amount'])
+#    else:
+#        return ('TBA')
+#
