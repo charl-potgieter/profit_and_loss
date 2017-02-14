@@ -4,8 +4,10 @@
 #
 #
 # Add below columns to df_trx_summary
-#    - opening accrual or prepayment
+#    - Amortisation
+#    - True_up_down
 #    - P&L
+#    - opening accrual or prepayment
 #    - closing accrual or prepayment
 # 
 #
@@ -157,8 +159,9 @@ if __name__=='__main__':
     df_trx['PreviousAmountPaid'] = df_trx.apply(\
             func = PreviousAmountPaid, axis =1)
 
-
-
+    df_trx.loc[df_trx['IsPrepayment'] != True, 'CashExpense'] = \
+            df_trx['Amount']
+    df_trx['CashExpense'] = df_trx['CashExpense'].fillna(0)
 
   
 
